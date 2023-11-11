@@ -1,6 +1,7 @@
 # Pastas criadas pelo projeto
 .idea
 templates
+lista_email
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

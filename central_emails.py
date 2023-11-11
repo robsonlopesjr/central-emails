@@ -5,6 +5,9 @@ import streamlit as st
 if not 'pagina_central_email' in st.session_state:
     st.session_state.pagina_central_email = 'home'
 
+# Variável para armazenar o endereço da pasta principal
+PASTA_ATUAL = Path(__file__).parent
+
 
 def mudar_pagina(nome_pagina):
     """
@@ -40,7 +43,11 @@ def pag_adicionar_novo_template():
 
 
 def salvar_template(nome, texto):
-    PASTA_ATUAL = Path(__file__).parent
+    """
+    Função que irá armazenar o template em disco local
+    :param nome: str
+    :param texto: str
+    """
     PASTA_TEMPLATES = PASTA_ATUAL / 'templates'
 
     # Cria a pasta templates e faz a validação para verificar se ja existe
@@ -59,6 +66,38 @@ def pag_lista_emails():
     Função responsável por preencher o que será apresentado na Página Lista de Emails
     """
     st.markdown("# Lista de Emails")
+
+    st.button('Adicionar Lista', on_click=mudar_pagina, args=('adicionar_nova_lista',))
+
+
+def pag_adicionar_nova_lista():
+    """
+    Função responsável por preencher o que será apresentado na Página Nova Lista de Emails
+    """
+    st.markdown("# Nova Lista")
+    nome_lista = st.text_input('Nome da lista:')
+    emails_lista = st.text_area('Escreva os e-mails separados por vírgula:', height=400)
+    st.button('Salvar', on_click=salvar_lista, args=('nome_lista', 'emails_lista'))
+
+
+def salvar_lista(nome, texto):
+    """
+    Função que irá armazenar a lista de e-mails em disco local
+    :param nome: str
+    :param texto: str
+    :return:
+    """
+    PASTA_LISTAS = PASTA_ATUAL / 'lista_email'
+
+    # Cria a pasta listas e faz a validação para verificar se ja existe
+    PASTA_LISTAS.mkdir(exist_ok=True)
+
+    nome_arquivo = nome.replace(' ', '_').lower() + '.txt'
+
+    with open(PASTA_LISTAS / nome_arquivo, 'w') as arquivo:
+        arquivo.write(texto)
+
+    mudar_pagina('lista_emails')
 
 
 def pag_configuracao():
@@ -89,6 +128,9 @@ def main():
 
     elif st.session_state.pagina_central_email == 'lista_emails':
         pag_lista_emails()
+
+    elif st.session_state.pagina_central_email == 'adicionar_nova_lista':
+        pag_adicionar_nova_lista()
 
     elif st.session_state.pagina_central_email == 'configuracao':
         pag_configuracao()
