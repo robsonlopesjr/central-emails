@@ -39,7 +39,7 @@ def pag_adicionar_novo_template():
     st.markdown("# Novo Template")
     nome_template = st.text_input('Nome do template:')
     texto_template = st.text_area('Escreva o texto do template:', height=400)
-    st.button('Salvar', on_click=salvar_template, args=('nome_template', 'texto_template'))
+    st.button('Salvar', on_click=salvar_template, args=(nome_template, texto_template))
 
 
 def salvar_template(nome, texto):
@@ -54,6 +54,7 @@ def salvar_template(nome, texto):
     PASTA_TEMPLATES.mkdir(exist_ok=True)
 
     nome_arquivo = nome.replace(' ', '_').lower() + '.txt'
+    # print(nome_arquivo)
 
     with open(PASTA_TEMPLATES / nome_arquivo, 'w') as arquivo:
         arquivo.write(texto)
@@ -77,7 +78,7 @@ def pag_adicionar_nova_lista():
     st.markdown("# Nova Lista")
     nome_lista = st.text_input('Nome da lista:')
     emails_lista = st.text_area('Escreva os e-mails separados por vírgula:', height=400)
-    st.button('Salvar', on_click=salvar_lista, args=('nome_lista', 'emails_lista'))
+    st.button('Salvar', on_click=salvar_lista, args=(nome_lista, emails_lista))
 
 
 def salvar_lista(nome, texto):
