@@ -1,14 +1,26 @@
 from pathlib import Path
 import streamlit as st
 
-# Ao abrir a página define a home como página inicial
-if not 'pagina_central_email' in st.session_state:
-    st.session_state.pagina_central_email = 'home'
 
 # Variável para armazenar o endereço das pastas de armazenamento
 PASTA_ATUAL = Path(__file__).parent
 PASTA_TEMPLATES = PASTA_ATUAL / 'templates'
 PASTA_LISTAS = PASTA_ATUAL / 'lista_email'
+
+
+def init_state():
+    # Definir a página inicial como home
+    if not 'pagina_central_email' in st.session_state:
+        st.session_state.pagina_central_email = 'home'
+    # Definir o valor padrão para os destinatarios no home
+    if not 'destinatarios_atual' in st.session_state:
+        st.session_state.destinatarios_atual = ''
+    # Definir o valor padrão para o título do e-mail no home
+    if not 'titulo_atual' in st.session_state:
+        st.session_state.titulo_atual = ''
+    # Definir o valor padrão para o corpo do e-mail no home
+    if not 'corpo_email_atual' in st.session_state:
+        st.session_state.corpo_email_atual = ''
 
 
 def mudar_pagina(nome_pagina):
@@ -23,7 +35,30 @@ def home():
     """
     Função responsável por preencher o que será apresentado na Página Home
     """
+    destinatarios_atual = st.session_state.destinatarios_atual
+    titulo_atual = st.session_state.titulo_atual
+    corpo_email_atual= st.session_state.corpo_email_atual
+
     st.markdown("# Central de Emails")
+
+    destinatarios = st.text_input('Destinatários do e-mail:', value=destinatarios_atual)
+    titulo = st.text_input('Título do e-mail:', value=titulo_atual)
+    corpo = st.text_area('Digite o e-mail:', height=400, value=corpo_email_atual)
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.button('Enviar e-mail', use_container_width=True)
+    col3.button('Limpar', use_container_width=True, on_click=limpar_campos_home)
+
+    st.session_state.destinatarios_atual = destinatarios
+    st.session_state.titulo_atual = titulo
+    st.session_state.corpo_email_atual = corpo
+
+
+def limpar_campos_home():
+    st.session_state.destinatarios_atual = ''
+    st.session_state.titulo_atual = ''
+    st.session_state.corpo_email_atual = ''
 
 
 def pag_templates():
@@ -37,7 +72,7 @@ def pag_templates():
     for arquivo in PASTA_TEMPLATES.glob('*.txt'):
         nome_arquivo = arquivo.stem.replace('_', ' ').upper()
         col1, col2, col3 = st.columns([0.6, 0.2, 0.2])
-        col1.button(nome_arquivo, key=f'{nome_arquivo}', use_container_width=True)
+        col1.button(nome_arquivo, key=f'{nome_arquivo}', use_container_width=True, on_click=carregar_template, args=(nome_arquivo,))
         col2.button('EDITAR', key=f'editar_{nome_arquivo}', use_container_width=True, on_click=editar_template, args=(nome_arquivo,))
         col3.button('REMOVER', key=f'remover_{nome_arquivo}', use_container_width=True, on_click=remover_template, args=(nome_arquivo,))
 
@@ -99,6 +134,21 @@ def editar_template(nome):
     mudar_pagina('editar_template')
 
 
+def carregar_template(nome):
+    """
+    Função para carregar os dados do template para a página home
+    :param nome: str
+    """
+    nome_arquivo = nome.replace(' ', '_').lower() + '.txt'
+
+    with open(PASTA_TEMPLATES / nome_arquivo) as arquivo:
+        texto_arquivo = arquivo.read()
+
+    st.session_state.corpo_email_atual = texto_arquivo
+
+    mudar_pagina('home')
+
+
 def pag_lista_emails():
     """
     Função responsável por preencher o que será apresentado na Página Lista de Emails
@@ -110,7 +160,7 @@ def pag_lista_emails():
     for arquivo in PASTA_LISTAS.glob('*.txt'):
         nome_arquivo = arquivo.stem.replace('_', ' ').upper()
         col1, col2, col3 = st.columns([0.6, 0.2, 0.2])
-        col1.button(nome_arquivo, key=f'{nome_arquivo}', use_container_width=True)
+        col1.button(nome_arquivo, key=f'{nome_arquivo}', use_container_width=True, on_click=carregar_lista, args=(nome_arquivo, ))
         col2.button('EDITAR', key=f'editar_{nome_arquivo}', use_container_width=True, on_click=editar_lista,
                     args=(nome_arquivo,))
         col3.button('REMOVER', key=f'remover_{nome_arquivo}', use_container_width=True, on_click=remover_lista,
@@ -174,6 +224,21 @@ def editar_lista(nome):
     mudar_pagina('editar_lista')
 
 
+def carregar_lista(nome):
+    """
+    Função para carregar os dados da lista de e-mails para a página home no campo destinatários
+    :param nome: str
+    """
+    nome_arquivo = nome.replace(' ', '_').lower() + '.txt'
+
+    with open(PASTA_LISTAS / nome_arquivo) as arquivo:
+        texto_arquivo = arquivo.read()
+
+    st.session_state.destinatarios_atual = texto_arquivo
+
+    mudar_pagina('home')
+
+
 def pag_configuracao():
     """
     Função responsável por preencher o que será apresentado na Página Configuração
@@ -223,4 +288,5 @@ def main():
 
 
 if __name__ == "__main__":
+    init_state()
     main()
