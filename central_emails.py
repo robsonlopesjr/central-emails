@@ -1,3 +1,4 @@
+from pathlib import Path
 import streamlit as st
 
 # Ao abrir a página define a home como página inicial
@@ -25,25 +26,51 @@ def pag_templates():
     """
     st.markdown("# Templates")
 
+    st.button('Adicionar Template', on_click=mudar_pagina, args=('adicionar_novo_template',))
+
+
+def pag_adicionar_novo_template():
+    """
+    Função responsável por preencher o que será apresentado na Página Novo Template
+    """
+    st.markdown("# Novo Template")
+    nome_template = st.text_input('Nome do template:')
+    texto_template = st.text_area('Escreva o texto do template:', height=400)
+    st.button('Salvar', on_click=salvar_template, args=('nome_template', 'texto_template'))
+
+
+def salvar_template(nome, texto):
+    PASTA_ATUAL = Path(__file__).parent
+    PASTA_TEMPLATES = PASTA_ATUAL / 'templates'
+
+    # Cria a pasta templates e faz a validação para verificar se ja existe
+    PASTA_TEMPLATES.mkdir(exist_ok=True)
+
+    nome_arquivo = nome.replace(' ', '_').lower() + '.txt'
+
+    with open(PASTA_TEMPLATES / nome_arquivo, 'w') as arquivo:
+        arquivo.write(texto)
+
+    mudar_pagina('templates')
+
 
 def pag_lista_emails():
     """
-        Função responsável por preencher o que será apresentado na Página Lista de Emails
-        """
+    Função responsável por preencher o que será apresentado na Página Lista de Emails
+    """
     st.markdown("# Lista de Emails")
 
 
 def pag_configuracao():
     """
-        Função responsável por preencher o que será apresentado na Página Configuração
-        """
+    Função responsável por preencher o que será apresentado na Página Configuração
+    """
     st.markdown("# Configuração")
 
 
 def main():
     """
     Função principal
-    :return:
     """
     # Definição dos Botões da Sidebar
     st.sidebar.button("Central de Emails", use_container_width=True, on_click=mudar_pagina, args=('home',))
@@ -56,6 +83,9 @@ def main():
 
     elif st.session_state.pagina_central_email == 'templates':
         pag_templates()
+
+    elif st.session_state.pagina_central_email == 'adicionar_novo_template':
+        pag_adicionar_novo_template()
 
     elif st.session_state.pagina_central_email == 'lista_emails':
         pag_lista_emails()
