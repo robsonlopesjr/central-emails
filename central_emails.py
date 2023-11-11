@@ -5,8 +5,10 @@ import streamlit as st
 if not 'pagina_central_email' in st.session_state:
     st.session_state.pagina_central_email = 'home'
 
-# Variável para armazenar o endereço da pasta principal
+# Variável para armazenar o endereço das pastas de armazenamento
 PASTA_ATUAL = Path(__file__).parent
+PASTA_TEMPLATES = PASTA_ATUAL / 'templates'
+PASTA_LISTAS = PASTA_ATUAL / 'lista_email'
 
 
 def mudar_pagina(nome_pagina):
@@ -29,16 +31,26 @@ def pag_templates():
     """
     st.markdown("# Templates")
 
+    st.divider()
+
+    for arquivo in PASTA_TEMPLATES.glob('*.txt'):
+        nome_arquivo = arquivo.stem.replace('_', ' ').upper()
+        col1, col2, col3 = st.columns([0.6, 0.2, 0.2])
+        col1.button(nome_arquivo, key=f'{nome_arquivo}', use_container_width=True)
+        col2.button('EDITAR', key=f'editar_{nome_arquivo}', use_container_width=True, on_click=editar_template, args=(nome_arquivo,))
+        col3.button('REMOVER', key=f'remover_{nome_arquivo}', use_container_width=True, on_click=remover_template, args=(nome_arquivo,))
+
+    st.divider()
+
     st.button('Adicionar Template', on_click=mudar_pagina, args=('adicionar_novo_template',))
 
 
-def pag_adicionar_novo_template():
+def pag_adicionar_novo_template(nome_template='', texto_template=''):
     """
     Função responsável por preencher o que será apresentado na Página Novo Template
     """
-    st.markdown("# Novo Template")
-    nome_template = st.text_input('Nome do template:')
-    texto_template = st.text_area('Escreva o texto do template:', height=400)
+    nome_template = st.text_input('Nome do template:', value=nome_template)
+    texto_template = st.text_area('Escreva o texto do template:', height=400, value=texto_template)
     st.button('Salvar', on_click=salvar_template, args=(nome_template, texto_template))
 
 
@@ -48,18 +60,40 @@ def salvar_template(nome, texto):
     :param nome: str
     :param texto: str
     """
-    PASTA_TEMPLATES = PASTA_ATUAL / 'templates'
-
     # Cria a pasta templates e faz a validação para verificar se ja existe
     PASTA_TEMPLATES.mkdir(exist_ok=True)
 
     nome_arquivo = nome.replace(' ', '_').lower() + '.txt'
-    # print(nome_arquivo)
 
     with open(PASTA_TEMPLATES / nome_arquivo, 'w') as arquivo:
         arquivo.write(texto)
 
     mudar_pagina('templates')
+
+
+def remover_template(nome):
+    """
+    Função para remover o template
+    :param nome: str
+    """
+    nome_arquivo = nome.replace(' ', '_').lower() + '.txt'
+    (PASTA_TEMPLATES / nome_arquivo).unlink()
+
+
+def editar_template(nome):
+    """
+    Função para remover o template
+    :param nome: str
+    """
+    nome_arquivo = nome.replace(' ', '_').lower() + '.txt'
+
+    with open(PASTA_TEMPLATES / nome_arquivo) as arquivo:
+        texto_arquivo = arquivo.read()
+
+    st.session_state.nome_template_editar = nome
+    st.session_state.texto_template_editar = texto_arquivo
+
+    mudar_pagina('editar_template')
 
 
 def pag_lista_emails():
@@ -88,8 +122,6 @@ def salvar_lista(nome, texto):
     :param texto: str
     :return:
     """
-    PASTA_LISTAS = PASTA_ATUAL / 'lista_email'
-
     # Cria a pasta listas e faz a validação para verificar se ja existe
     PASTA_LISTAS.mkdir(exist_ok=True)
 
@@ -126,6 +158,12 @@ def main():
 
     elif st.session_state.pagina_central_email == 'adicionar_novo_template':
         pag_adicionar_novo_template()
+
+    elif st.session_state.pagina_central_email == 'editar_template':
+        nome_template = st.session_state.nome_template_editar
+        texto_template = st.session_state.texto_template_editar
+
+        pag_adicionar_novo_template(nome_template, texto_template)
 
     elif st.session_state.pagina_central_email == 'lista_emails':
         pag_lista_emails()
