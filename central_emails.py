@@ -14,6 +14,7 @@ PASTA_LISTAS = PASTA_ATUAL / 'lista_email'
 def mudar_pagina(nome_pagina):
     """
     Função responsável pela alteração dos nomes das páginas na session_state
+    :param nome_pagina: str
     """
     st.session_state.pagina_central_email = nome_pagina
 
@@ -48,6 +49,8 @@ def pag_templates():
 def pag_adicionar_novo_template(nome_template='', texto_template=''):
     """
     Função responsável por preencher o que será apresentado na Página Novo Template
+    :param nome_template: str
+    :param texto_template: str
     """
     nome_template = st.text_input('Nome do template:', value=nome_template)
     texto_template = st.text_area('Escreva o texto do template:', height=400, value=texto_template)
@@ -82,7 +85,7 @@ def remover_template(nome):
 
 def editar_template(nome):
     """
-    Função para remover o template
+    Função para editar o template do e-mail
     :param nome: str
     """
     nome_arquivo = nome.replace(' ', '_').lower() + '.txt'
@@ -102,16 +105,30 @@ def pag_lista_emails():
     """
     st.markdown("# Lista de Emails")
 
+    st.divider()
+
+    for arquivo in PASTA_LISTAS.glob('*.txt'):
+        nome_arquivo = arquivo.stem.replace('_', ' ').upper()
+        col1, col2, col3 = st.columns([0.6, 0.2, 0.2])
+        col1.button(nome_arquivo, key=f'{nome_arquivo}', use_container_width=True)
+        col2.button('EDITAR', key=f'editar_{nome_arquivo}', use_container_width=True, on_click=editar_lista,
+                    args=(nome_arquivo,))
+        col3.button('REMOVER', key=f'remover_{nome_arquivo}', use_container_width=True, on_click=remover_lista,
+                    args=(nome_arquivo,))
+
+    st.divider()
+
     st.button('Adicionar Lista', on_click=mudar_pagina, args=('adicionar_nova_lista',))
 
 
-def pag_adicionar_nova_lista():
+def pag_adicionar_nova_lista(nome_lista='', emails_lista=''):
     """
     Função responsável por preencher o que será apresentado na Página Nova Lista de Emails
+    :param nome_lista: str
+    :param emails_lista: str
     """
-    st.markdown("# Nova Lista")
-    nome_lista = st.text_input('Nome da lista:')
-    emails_lista = st.text_area('Escreva os e-mails separados por vírgula:', height=400)
+    nome_lista = st.text_input('Nome da lista:', value=nome_lista)
+    emails_lista = st.text_area('Escreva os e-mails separados por vírgula:', height=400, value=emails_lista)
     st.button('Salvar', on_click=salvar_lista, args=(nome_lista, emails_lista))
 
 
@@ -120,7 +137,6 @@ def salvar_lista(nome, texto):
     Função que irá armazenar a lista de e-mails em disco local
     :param nome: str
     :param texto: str
-    :return:
     """
     # Cria a pasta listas e faz a validação para verificar se ja existe
     PASTA_LISTAS.mkdir(exist_ok=True)
@@ -131,6 +147,31 @@ def salvar_lista(nome, texto):
         arquivo.write(texto)
 
     mudar_pagina('lista_emails')
+
+
+def remover_lista(nome):
+    """
+    Função para remover a lista de emails
+    :param nome: str
+    """
+    nome_arquivo = nome.replace(' ', '_').lower() + '.txt'
+    (PASTA_LISTAS / nome_arquivo).unlink()
+
+
+def editar_lista(nome):
+    """
+    Função para editar a lista de e-mails
+    :param nome: str
+    """
+    nome_arquivo = nome.replace(' ', '_').lower() + '.txt'
+
+    with open(PASTA_LISTAS / nome_arquivo) as arquivo:
+        texto_arquivo = arquivo.read()
+
+    st.session_state.nome_lista_editar = nome
+    st.session_state.texto_lista_editar = texto_arquivo
+
+    mudar_pagina('editar_lista')
 
 
 def pag_configuracao():
@@ -170,6 +211,12 @@ def main():
 
     elif st.session_state.pagina_central_email == 'adicionar_nova_lista':
         pag_adicionar_nova_lista()
+
+    elif st.session_state.pagina_central_email == 'editar_lista':
+        nome_lista = st.session_state.nome_lista_editar
+        emails_lista = st.session_state.texto_lista_editar
+
+        pag_adicionar_nova_lista(nome_lista, emails_lista)
 
     elif st.session_state.pagina_central_email == 'configuracao':
         pag_configuracao()
