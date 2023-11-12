@@ -1,4 +1,5 @@
 from pathlib import Path
+from utilidades import enviar_email
 import streamlit as st
 
 
@@ -47,7 +48,7 @@ def home():
 
     col1, col2, col3 = st.columns(3)
 
-    col1.button('Enviar e-mail', use_container_width=True)
+    col1.button('Enviar e-mail', use_container_width=True, on_click=enviar_email, args=(destinatarios, titulo, corpo))
     col3.button('Limpar', use_container_width=True, on_click=limpar_campos_home)
 
     st.session_state.destinatarios_atual = destinatarios
@@ -59,6 +60,19 @@ def limpar_campos_home():
     st.session_state.destinatarios_atual = ''
     st.session_state.titulo_atual = ''
     st.session_state.corpo_email_atual = ''
+
+
+def enviar_email(destinatarios, titulo, corpo):
+    """
+    Função para enviar o E-mail aos Destinatários
+
+    :param destinatarios: str
+    :param titulo: str
+    :param corpo: str
+    :return:
+    """
+    destinatarios = destinatarios.replace(' ', '').split(',')
+    enviar_email('robsonlopes.jr@gmail.com', destinatarios=destinatarios, titulo=titulo, corpo=corpo)
 
 
 def pag_templates():
