@@ -1,5 +1,5 @@
 from pathlib import Path
-from utilidades import enviar_email
+from utilidades import send_email
 import streamlit as st
 
 
@@ -7,6 +7,7 @@ import streamlit as st
 PASTA_ATUAL = Path(__file__).parent
 PASTA_TEMPLATES = PASTA_ATUAL / 'templates'
 PASTA_LISTAS = PASTA_ATUAL / 'lista_email'
+PASTA_CONFIGURACOES = PASTA_ATUAL / 'configuracoes'
 
 
 def init_state():
@@ -72,7 +73,17 @@ def enviar_email(destinatarios, titulo, corpo):
     :return:
     """
     destinatarios = destinatarios.replace(' ', '').split(',')
-    enviar_email('robsonlopes.jr@gmail.com', destinatarios=destinatarios, titulo=titulo, corpo=corpo)
+    email_usuario = carregar_email_usuario()
+    chave_usuario = carregar_chave_usuario()
+
+    if email_usuario == '':
+        st.error("Falta inserir o e-mail do remetente na página de configurações")
+
+    elif chave_usuario == '':
+        st.error("Falta inserir a chave de e-mail google do remetente na página de configurações")
+
+    else:
+        send_email(email_usuario=email_usuario, destinatarios=destinatarios, titulo=titulo, corpo=corpo, senha_app=chave_usuario)
 
 
 def pag_templates():
@@ -258,6 +269,54 @@ def pag_configuracao():
     Função responsável por preencher o que será apresentado na Página Configuração
     """
     st.markdown("# Configuração")
+
+    email = st.text_input("Digite o seu e-mail:")
+    st.button("Salvar", key='botao_salvar_email', on_click=botao_salvar_email, args=(email,))
+
+    chave = st.text_input("Digite a chave password configurado na central do google:")
+    st.button("Salvar", key='botao_salvar_chave', on_click=botao_salvar_chave, args=(chave,))
+
+
+def botao_salvar_email(email):
+    """
+    Função para registrar o e-mail que será usado como remetente no envio dos e-mails
+    :param email: str
+    """
+    PASTA_CONFIGURACOES.mkdir(exist_ok=True)
+
+    with open(PASTA_CONFIGURACOES / 'email_usuario.txt', 'w') as arquivo:
+        arquivo.write(email)
+
+
+def botao_salvar_chave(chave):
+    """
+    Função para registrar o a senha_app que será usado para envio dos e-mails
+    :param chave: str
+    """
+    PASTA_CONFIGURACOES.mkdir(exist_ok=True)
+
+    with open(PASTA_CONFIGURACOES / 'chave_usuario.txt', 'w') as arquivo:
+        arquivo.write(chave)
+
+
+def carregar_email_usuario():
+    PASTA_CONFIGURACOES.mkdir(exist_ok=True)
+
+    if (PASTA_CONFIGURACOES / 'email_usuario.txt').exists():
+        with open(PASTA_CONFIGURACOES / 'email_usuario.txt', 'r') as arquivo:
+            return arquivo.read()
+
+    return ''
+
+
+def carregar_chave_usuario():
+    PASTA_CONFIGURACOES.mkdir(exist_ok=True)
+
+    if (PASTA_CONFIGURACOES / 'chave_usuario.txt').exists():
+        with open(PASTA_CONFIGURACOES / 'chave_usuario.txt', 'r') as arquivo:
+            return arquivo.read()
+
+    return ''
 
 
 def main():

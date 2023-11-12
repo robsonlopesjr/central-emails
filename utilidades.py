@@ -3,7 +3,7 @@ import smtplib
 import ssl
 
 
-def enviar_email(email_usuario, destinatarios, titulo, corpo, senha_app):
+def send_email(email_usuario, destinatarios, titulo, corpo, senha_app):
     """
     Função para enviar o E-mail usando o provedor do Gmail
 
