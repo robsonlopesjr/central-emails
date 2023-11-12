@@ -17,7 +17,7 @@ Aplicativo Web para gerenciar listas e templates de email e realizar o envio pel
 <br>
 
 <p align="center">
-  <img alt="Central de Envio de E-mails" src=".github/preview.jpg" width="100%">
+  <img alt="Central de Envio de E-mails" src=".github/preview.png" width="100%">
 </p>
 
 ## 🚀 Tecnologias
